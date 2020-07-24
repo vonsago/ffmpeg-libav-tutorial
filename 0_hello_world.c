@@ -18,6 +18,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <inttypes.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 // print out the steps and errors
 static void logging(const char *fmt, ...);
@@ -25,6 +27,8 @@ static void logging(const char *fmt, ...);
 static int decode_packet(AVPacket *pPacket, AVCodecContext *pCodecContext, AVFrame *pFrame);
 // save a frame into a .pgm file
 static void save_gray_frame(unsigned char *buf, int wrap, int xsize, int ysize, char *filename);
+//
+char* concat(const char *s1, const char *s2);
 
 int main(int argc, const char *argv[])
 {
@@ -76,7 +80,7 @@ int main(int argc, const char *argv[])
     return -1;
   }
 
-  // the component that knows how to enCOde and DECode the stream
+  // the component that knows how to EnCode and DeCode the stream
   // it's the codec (audio or video)
   // http://ffmpeg.org/doxygen/trunk/structAVCodec.html
   AVCodec *pCodec = NULL;
@@ -249,13 +253,26 @@ static void save_gray_frame(unsigned char *buf, int wrap, int xsize, int ysize, 
 {
     FILE *f;
     int i;
-    f = fopen(filename,"w");
+    mkdir("/root/files", 0777);
+    dir_filename = concat("/run/files", filename);
+    f = fopen(dir_filename,"w");
     // writing the minimal required header for a pgm file format
     // portable graymap format -> https://en.wikipedia.org/wiki/Netpbm_format#PGM_example
     fprintf(f, "P5\n%d %d\n%d\n", xsize, ysize, 255);
+    logging("write line %s", dir_filename);
 
     // writing line by line
-    for (i = 0; i < ysize; i++)
+    for (i = 0; i < ysize; i++) {
         fwrite(buf + i * wrap, 1, xsize, f);
+    }
     fclose(f);
+}
+
+char* concat(const char *s1, const char *s2)
+{
+    char *result = malloc(strlen(s1) + strlen(s2) + 1); // +1 for the null-terminator
+    // in real code you would check for errors in malloc here
+    strcpy(result, s1);
+    strcat(result, s2);
+    return result;
 }
