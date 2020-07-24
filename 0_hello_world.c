@@ -254,7 +254,7 @@ static void save_gray_frame(unsigned char *buf, int wrap, int xsize, int ysize, 
     FILE *f;
     int i;
     mkdir("/root/files", 0777);
-    dir_filename = concat("/run/files", filename);
+    char* dir_filename = concat("/run/files/", filename);
     f = fopen(dir_filename,"w");
     // writing the minimal required header for a pgm file format
     // portable graymap format -> https://en.wikipedia.org/wiki/Netpbm_format#PGM_example
